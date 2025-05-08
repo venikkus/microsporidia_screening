@@ -36,15 +36,19 @@ Uses the `BUSCO_phylogenomics.py` script to build a phylogenetic tree on best bi
 
 ## Requirements
 
-- Linux operating system (MacOS is not supported due to FragGeneScan issues and pipeline wasn't tested on Windows)
-- Conda (You can download it from [here](https://www.anaconda.com/docs/getting-started/miniconda/install#quickstart-install-instructions))
+- Linux operating system (MacOS is not supported due to FragGeneScan issues and pipeline wasn't tested on Windows), in our case: 
+
+    >Linux version 6.8.0-55-generic (buildd@lcy02-amd64-095) (x86_64-linux-gnu-gcc-13 (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0, GNU ld (GNU Binutils for Ubuntu) 2.42) #57-Ubuntu SMP PREEMPT_DYNAMIC
+- Conda (You can download it from [here](https://www.anaconda.com/docs/getting-started/miniconda/install#quickstart-install-instructions)), in our case:
+    >conda 24.11.3
+
 
 ## Install
 
 1. Clone this repository to your local machine:
 ```bash
-git clone <repository_url>
-cd <repository_folder>
+git clone git@github.com:venikkus/microsporidia_screening.git
+cd microsporidia_screening
 ```
 
 2. Use the provided `environment.yaml` file to create the conda environment:
@@ -128,6 +132,10 @@ snakemake -p --cores [NUM_CORES] --use-conda --config id=[ASSEMBLY_ID] assembly=
 - `[ASSEMBLY_ID]` — NCBI assembly accession (e.g., GCF_000001405.39)
 - `[ASSEMBLY_NAME]` — name of the genome assembly (e.g., GRCh38.p13)
 
+And then BUSCO pipeline is complete, run following command:
+```bash
+snakemake -s snakefile_phylo --cores [NUM_CORES] --config busco_input=[DATA_FOR_TREE]
+```
 
 ## Examples
 
@@ -148,8 +156,6 @@ chmod +x run_all.sh
 ```
 
 If your process was accidentaly or purposely killed and marker folders was created, but not the required files, please delete marker folders and rerun.
-
-If you want to rerun all processes, you can delete all folders using `snakemake clean`
 
 ## Contact
 
