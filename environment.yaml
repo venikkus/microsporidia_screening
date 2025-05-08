@@ -1,0 +1,16 @@
+name: screening
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - python=3.8
+  - snakemake
+  - maxbin2
+  - busco
+  - pandas
+  - matplotlib
+  - muscle=5.1
+  - trimal=1.4.1
+  - iqtree
+  - fasttree

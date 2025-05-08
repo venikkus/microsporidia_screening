@@ -1,0 +1,18 @@
+rule busco_phylogenomics_all:
+    input:
+        "data_for_tree"
+    output:
+        "busco_phylo_results/species_tree.nwk"
+    params:
+        outdir = "busco_phylo_results",
+        threads = 10,
+        percent_single_copy = 80
+    shell:
+        """
+        rm -rf {params.outdir}
+        python BUSCO_phylogenomics/BUSCO_phylogenomics.py \
+            -i {input} \
+            -o {params.outdir} \
+            -t {params.threads} \
+            -psc {params.percent_single_copy}
+        """
