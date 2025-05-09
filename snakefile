@@ -11,7 +11,8 @@ rule all:
         f"maxbin_output/{SAMPLE_ID}/{SAMPLE_ID}.summary",
         f"busco_output/{SAMPLE_ID}/done",
         f"busco_output/{SAMPLE_ID}/done_microsporidia",
-        f"busco_output/{SAMPLE_ID}/best_fungi_bin.txt"
+        f"busco_output/{SAMPLE_ID}/best_fungi_bin.txt",
+        f"busco_output/{SAMPLE_ID}/copied_all_fungi_bins.ok"
 
 def gcf_url(wildcards):
     gcf_id = wildcards.id
@@ -56,7 +57,7 @@ rule maxbin:
         abund = "alignment/{id}_abundance.tsv"
     output:
         summary = "maxbin_output/{id}/{id}.summary"
-    threads: 20
+    threads: 4
     shell:
         """
         mkdir -p maxbin_output/{wildcards.id}
@@ -70,7 +71,7 @@ rule busco_all_bins:
         touch("busco_output/{id}/done")
     params:
         lineage = "busco/fungi_odb10"
-    threads: 20
+    threads: 4
     run:
         fasta_files = glob.glob(f"maxbin_output/{wildcards.id}/*.fasta")
         for fasta in fasta_files:
@@ -79,9 +80,9 @@ rule busco_all_bins:
             shell(f"""
                 busco -i {fasta} -o run_{binname} \
                     -l {params.lineage} -m genome -c {threads} \
-                    --offline -f --out_path {outdir}
+                    --offline --out_path {outdir}
             """)
-            faa_dir = os.path.join(outdir, f"run_{binname}_fungi", "busco_sequences", "single_copy_busco_sequences")
+            faa_dir = os.path.join(outdir, f"run_{binname}", "busco_sequences", "single_copy_busco_sequences")
             merged_faa = f"{outdir}/sc_{binname}_merged.faa"
             shell(f"cat {faa_dir}/*.faa > {merged_faa} || touch {merged_faa}")
         shell(f"touch {output[0]}")
@@ -94,7 +95,7 @@ rule busco_microsporidia_bins:
         touch("busco_output/{id}/done_microsporidia")
     params:
         lineage = "busco/microsporidia_odb10"
-    threads: 20
+    threads: 4
     run:
         fasta_files = glob.glob(f"maxbin_output/{wildcards.id}/*.fasta")
         for fasta in fasta_files:
@@ -121,40 +122,58 @@ rule best_bin_fungi:
     run:
         import re
         print("Found summary files:")
+        good_bins = []
         for path in input.summaries:
             print(" -", path)
-        best_bin = None
-        best_s_value = -1.0
-        for path in input.summaries:
             match = re.search(r"run_(.+?)/short_summary", path)
             if not match:
                 continue
             binname = match.group(1)
             with open(path) as f:
                 for line in f:
-                    if "C:" in line and "S:" in line:
-                        s_match = re.search(r"S:(\d+\.\d+)%", line)
-                        if s_match:
-                            s_value = float(s_match.group(1))
-                            print(f"Bin {binname}: S = {s_value}")
-                            if s_value > best_s_value:
-                                best_s_value = s_value
-                                best_bin = binname
+                    if "C:" in line:
+                        c_match = re.search(r"C:(\d+\.\d+)%", line)
+                        if c_match:
+                            c_value = float(c_match.group(1))
+                            print(f"Bin {binname}: C = {c_value}")
+                            if c_value > 10.0:
+                                good_bins.append((binname, c_value))
                         break
-        assert best_bin is not None, "No valid BUSCO summaries with S: found"
+        assert good_bins, "No bins found with C > 10%"
         with open(output[0], "w") as out:
-            out.write(best_bin + "\n")
+            for binname, _ in sorted(good_bins, key=lambda x: -x[1]):
+                out.write(binname + "\n")
 
 rule copy_single_copy_buscos_fungi:
     input:
-        best_bin = "busco_output/{id}/best_fungi_bin.txt"
+        best_bins = "busco_output/{id}/best_fungi_bin.txt"
     output:
-        directory("data_for_tree/busco_{id}/run_fungi_odb10/busco_sequences/single_copy_busco_sequences")
+        touch("busco_output/{id}/copied_all_fungi_bins.ok")
     run:
-        with open(input.best_bin) as f:
-            binname = f.read().strip()
-        src_dir = f"busco_output/{wildcards.id}/run_{binname}/run_fungi_odb10/busco_sequences/single_copy_busco_sequences"
-        shell(f"""
-            mkdir -p {output[0]}
-            cp {src_dir}/*.faa {output[0]}/
-        """)
+        import os, glob, shutil, pathlib
+
+        sample_id = wildcards.id
+
+        with open(input.best_bins) as f:
+            full_bin_names = [line.strip() for line in f if line.strip()]
+
+        copied = 0
+        for full_bin in full_bin_names:
+            bin_id = full_bin.split(".")[-1]
+            run_dir = f"run_{full_bin}"
+            src_dir = f"busco_output/{sample_id}/{run_dir}/run_fungi_odb10/busco_sequences/single_copy_busco_sequences"
+            dst_dir = f"data_for_tree/busco_{full_bin}/run_fungi_odb10/busco_sequences/single_copy_busco_sequences"
+
+            if not os.path.isdir(src_dir):
+                print(f"WARNING: source directory missing: {src_dir}")
+                continue
+
+            os.makedirs(dst_dir, exist_ok=True)
+
+            for faa_file in glob.glob(os.path.join(src_dir, "*.faa")):
+                shutil.copy(faa_file, dst_dir)
+                copied += 1
+
+        assert copied > 0, f"No .faa files copied for {sample_id}"
+
+        pathlib.Path(output[0]).touch()
