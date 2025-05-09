@@ -1,3 +1,7 @@
+rule all:
+    input:
+        "busco_phylo_results/supermatrix/SUPERMATRIX.fasta.treefile"
+
 rule busco_phylogenomics_all:
     input:
         lambda wildcards: config["busco_input"]
@@ -15,4 +19,45 @@ rule busco_phylogenomics_all:
             -o {params.outdir} \
             -t {params.threads} \
             -psc {params.percent_single_copy}
+        """
+
+rule clean_partitions_file:
+    input:
+        "busco_phylo_results/supermatrix/SUPERMATRIX.partitions.nex"
+    output:
+        "busco_phylo_results/supermatrix/SUPERMATRIX.cleaned.partitions.nex"
+    run:
+        with open(input[0]) as fin, open(output[0], "w") as fout:
+            inside_sets = False
+            for line in fin:
+                stripped = line.strip()
+                if stripped.lower().startswith("begin sets"):
+                    inside_sets = True
+                    fout.write(line)
+                    continue
+                elif stripped.lower().startswith("end"):
+                    inside_sets = False
+                    fout.write(line)
+                    continue
+
+                if inside_sets and "SUPERMATRIX.phylip:" in line:
+                    # rm "SUPERMATRIX.phylip:"
+                    cleaned_line = line.replace("SUPERMATRIX.phylip:", "").strip()
+                    fout.write("    " + cleaned_line + "\n")
+                else:
+                    fout.write(line)
+
+rule run_iqtree:
+    input:
+        alignment = "busco_phylo_results/supermatrix/SUPERMATRIX.fasta",
+        partitions = "busco_phylo_results/supermatrix/SUPERMATRIX.cleaned.partitions.nex"
+    output:
+        treefile = "busco_phylo_results/supermatrix/SUPERMATRIX.fasta.treefile"
+    threads: 8
+    shell:
+        """
+        iqtree2 -s {input.alignment} \
+                -p {input.partitions} \
+                -B 1000 \
+                -T {threads}
         """
