@@ -18,9 +18,9 @@ This repository contains a **Snakemake**-based pipeline for genome binning and p
 
 Downloads a reference genome assembly with a given NCBI identifier (e.g. `GCF_007210705.1`). Uses the NCBI FTP link to obtain the `.fna.gz` file, which is then unpacked into `input_reads/`.
 
-2. **Fake coverage simulation**
+2. **Artificial coverage**
 
-Creates a fake coverage file required by `MaxBin2`. Each sequence is assigned an artificial coverage (default 300x), which is specified in `alignment/{id}_abundance.tsv`.
+Create coverage file required by `MaxBin2`. Each sequence is assigned an artificial coverage (default 300x), which is specified in `alignment/{id}_abundance.tsv`.
 
 3. **Binning with MaxBin2**
 
@@ -32,14 +32,14 @@ Evaluates the completeness of each bin using BUSCO based on the fungi_odb10 line
 
 7. **BUSCO Phylogenomics**
 
-Uses the `BUSCO_phylogenomics.py` script to build a phylogenetic tree on best bins and provided collection of microsporidia.
+Uses the `BUSCO_phylogenomics.py` script and provided collection of microsporidia in `data_for_tree` archive to build a phylogenetic tree on best bins.
 
 ## Requirements
 
 - Linux operating system (MacOS is not supported due to FragGeneScan issues and pipeline wasn't tested on Windows), in our case: 
 
     >Linux version 6.8.0-55-generic (buildd@lcy02-amd64-095) (x86_64-linux-gnu-gcc-13 (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0, GNU ld (GNU Binutils for Ubuntu) 2.42) #57-Ubuntu SMP PREEMPT_DYNAMIC
-- Conda (You can download it from [here](https://www.anaconda.com/docs/getting-started/miniconda/install#quickstart-install-instructions)), in our case:
+- Conda (you can download it from [here](https://www.anaconda.com/docs/getting-started/miniconda/install#quickstart-install-instructions)), in our case:
     >conda 24.11.3
 
 
@@ -60,10 +60,10 @@ conda activate screening
 
 Clone `BUSCO_phylogenomics` tool from GitHub.
 ```bash
-git clone https://github.com/jamiemcg/BUSCO_phylogenomics
+git clone git@github.com:jamiemcg/BUSCO_phylogenomics
 ```
 
-Then download and unzip the databases (this step for people, who have a server and need to use VPN, if work from 💅Russia💅):
+Then download and unzip the databases (this step is for people who need to use a VPN, since downloading is not available in 💅Russia💅):
 ```bash
 mkdir -p busco/fungi_odb10
 mkdir -p busco/microsporidia_odb10
@@ -74,6 +74,13 @@ wget -c https://busco-data.ezlab.org/v5/data/lineages/fungi_odb10.2024-01-08.tar
 tar -xvzf busco/fungi_odb10.2024-01-08.tar.gz -C busco
 tar -xvzf busco/microsporidia_odb10.2024-01-08.tar.gz -C busco
 ```
+
+Download unpack reference busco results archive from [link](https://mega.nz/file/Hvo3XIZb#AsMuHzxkmFBySby07WmKajqgCF8_kf7sKXjSa-cLtZs):
+
+```bash
+tar -xvzf data_for_tree.tar.gz
+```
+
 ## Features
 
 Output structure:
@@ -132,7 +139,7 @@ snakemake -p --cores [NUM_CORES] --use-conda --config id=[ASSEMBLY_ID] assembly=
 - `[ASSEMBLY_ID]` — NCBI assembly accession (e.g., GCF_000001405.39)
 - `[ASSEMBLY_NAME]` — name of the genome assembly (e.g., GRCh38.p13)
 
-And then BUSCO pipeline is complete, run following command:
+Then BUSCO pipeline is complete, run following command:
 ```bash
 snakemake -s snakefile_phylo --cores [NUM_CORES] --config busco_input=[DATA_FOR_TREE]
 ```
@@ -149,10 +156,20 @@ Or add parameters manually.
 snakemake --cores 50 --use-conda --config id=GCF_002237135.1 assembly=ASM223713v2
 ```
 
+And then:
+```bash
+snakemake -s snakefile_phylo --cores 4 --config busco_input=data_for_tree
+```
+
 Or ***all*** project (it might take a lot of time).
 ```bash
 chmod +x run_all.sh
 ./run_all.sh
+```
+
+And then:
+```bash
+snakemake -s snakefile_phylo --cores 4 --config busco_input=data_for_tree
 ```
 
 If your process was accidentaly or purposely killed and marker folders was created, but not the required files, please delete marker folders and rerun.
@@ -164,3 +181,4 @@ Please report any problems directly to the GitHub
 Also, you can send your feedback to
 [niksamusik@gmail.com](mailto:niksamusik@gmail.com) or [
 poluzerov24@gmail.com](mailto:poluzerov24@gmail.com).
+
