@@ -1,8 +1,8 @@
 rule busco_phylogenomics_all:
     input:
-        "data_for_tree"
+        lambda wildcards: config["busco_input"]
     output:
-        "busco_phylo_results/species_tree.nwk"
+        "busco_phylo_results/gene_trees_single_copy/ALL.tree"
     params:
         outdir = "busco_phylo_results",
         threads = 10,
