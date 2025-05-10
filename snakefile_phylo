@@ -1,19 +1,20 @@
 rule all:
     input:
-        "busco_phylo_results/supermatrix/SUPERMATRIX.fasta.treefile"
+        "busco_phylo_results/supermatrix/SUPERMATRIX.cleaned.partitions.nex.treefile"
 
 rule busco_phylogenomics_all:
     input:
         lambda wildcards: config["busco_input"]
     output:
-        "busco_phylo_results/gene_trees_single_copy/ALL.tree"
+        "busco_phylo_results/gene_trees_single_copy/ALL.tree",
+        "busco_phylo_results/supermatrix/SUPERMATRIX.partitions.nex",
+        "busco_phylo_results/supermatrix/SUPERMATRIX.fasta"
     params:
         outdir = "busco_phylo_results",
         threads = 10,
         percent_single_copy = 80
     shell:
         """
-        rm -rf {params.outdir}
         python BUSCO_phylogenomics/BUSCO_phylogenomics.py \
             -i {input} \
             -o {params.outdir} \
@@ -52,7 +53,7 @@ rule run_iqtree:
         alignment = "busco_phylo_results/supermatrix/SUPERMATRIX.fasta",
         partitions = "busco_phylo_results/supermatrix/SUPERMATRIX.cleaned.partitions.nex"
     output:
-        treefile = "busco_phylo_results/supermatrix/SUPERMATRIX.fasta.treefile"
+        treefile = "busco_phylo_results/supermatrix/SUPERMATRIX.cleaned.partitions.nex.treefile"
     threads: 8
     shell:
         """
