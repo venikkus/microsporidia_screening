@@ -15,14 +15,16 @@ rule all:
         f"busco_output/{SAMPLE_ID}/copied_all_fungi_bins.ok"
 
 def gcf_url(wildcards):
-    gcf_id = wildcards.id
-    assembly_name = config.get("assembly", f"{gcf_id}_genomic")
-    prefix = gcf_id.replace("GCF_", "").split(".")[0]
+    acc = wildcards.id
+    assembly_name = config.get("assembly", f"{acc}_genomic")
+    prefix = acc.replace("GCA_", "").replace("GCF_", "").split(".")[0]
     parts = [prefix[i:i+3] for i in range(0, 9, 3)]
+    root_dir = acc.split("_")[0]  # GCA или GCF
+
     return (
-        f"https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/{'/'.join(parts)}/"
-        f"{gcf_id}_{assembly_name}/{gcf_id}_{assembly_name}_genomic.fna.gz"
-    )
+        f"https://ftp.ncbi.nlm.nih.gov/genomes/all/{root_dir}/{'/'.join(parts)}/"
+        f"{acc}_{assembly_name}/{acc}_{assembly_name}_genomic.fna.gz"
+    ) 
 
 rule download_genome:
     output:
@@ -122,7 +124,8 @@ rule best_bin_fungi:
     run:
         import re
         print("Found summary files:")
-        good_bins = []
+        all_bins = []
+
         for path in input.summaries:
             print(" -", path)
             match = re.search(r"run_(.+?)/short_summary", path)
@@ -136,12 +139,23 @@ rule best_bin_fungi:
                         if c_match:
                             c_value = float(c_match.group(1))
                             print(f"Bin {binname}: C = {c_value}")
-                            if c_value > 10.0:
-                                good_bins.append((binname, c_value))
+                            all_bins.append((binname, c_value))
                         break
-        assert good_bins, "No bins found with C > 10%"
+
+        # filter by C > 10%
+        passing = [(b, c) for b, c in all_bins if c > 10.0]
+
+        if passing:
+            selected = passing
+        else:
+            print("Warning: No bins found with C > 10%, selecting best-scoring bin.")
+            if all_bins:
+                selected = [max(all_bins, key=lambda x: x[1])]
+            else:
+                raise ValueError("No valid BUSCO summary files found at all.")
+
         with open(output[0], "w") as out:
-            for binname, _ in sorted(good_bins, key=lambda x: -x[1]):
+            for binname, _ in selected:
                 out.write(binname + "\n")
 
 rule copy_single_copy_buscos_fungi:
