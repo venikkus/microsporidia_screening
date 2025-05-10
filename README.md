@@ -34,14 +34,13 @@ Evaluates the completeness of each bin using BUSCO based on the fungi_odb10 line
 
 Uses the `BUSCO_phylogenomics.py` script and provided collection of microsporidia in `data_for_tree` archive to build a phylogenetic tree on best bins.
 
-## Requirements
+## System and memory requirements
 
-- Linux operating system (MacOS is not supported due to FragGeneScan issues and pipeline wasn't tested on Windows), in our case: 
+- Linux (tested on Ubuntu 24.04 with kernel 6.8.0-55-generic)
 
-    >Linux version 6.8.0-55-generic (buildd@lcy02-amd64-095) (x86_64-linux-gnu-gcc-13 (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0, GNU ld (GNU Binutils for Ubuntu) 2.42) #57-Ubuntu SMP PREEMPT_DYNAMIC
-- Conda (you can download it from [here](https://www.anaconda.com/docs/getting-started/miniconda/install#quickstart-install-instructions)), in our case:
-    >conda 24.11.3
+- 60+ GB disk space for full analysis and >=32 GB RAM.
 
+- Not supported: MacOS (FragGeneScan compatibility issues) / Windows (untested)
 
 ## Install
 
@@ -63,7 +62,7 @@ Clone `BUSCO_phylogenomics` tool from GitHub.
 git clone git@github.com:jamiemcg/BUSCO_phylogenomics
 ```
 
-Then download and unzip the databases (this step is for people who need to use a VPN, since downloading is not available in 💅Russia💅):
+Then download and unzip the databases (this step is for people who need to use a VPN, since downloading is not available from 💅Russia💅):
 ```bash
 mkdir -p busco/fungi_odb10
 mkdir -p busco/microsporidia_odb10
@@ -78,7 +77,8 @@ tar -xvzf busco/microsporidia_odb10.2024-01-08.tar.gz -C busco
 Download unpack reference busco results archive from [link](https://mega.nz/file/Hvo3XIZb#AsMuHzxkmFBySby07WmKajqgCF8_kf7sKXjSa-cLtZs):
 
 ```bash
-tar -xvzf data_for_tree.tar.gz
+wget -O data_for_tree.tar.gz "https://mega.nz/file/Hvo3XIZb#AsMuHzxkmFBySby07WmKajqgCF8_kf7sKXjSa-cLtZs"
+tar -xzf data_for_tree.tar.gz
 ```
 
 ## Features
@@ -176,9 +176,8 @@ If your process was accidentaly or purposely killed and marker folders was creat
 
 ## Contact
 
-Please report any problems directly to the GitHub
-[issue tracker](https://github.com/venikkus/microsporidia_screening/issues).<br/>
-Also, you can send your feedback to
-[niksamusik@gmail.com](mailto:niksamusik@gmail.com) or [
-poluzerov24@gmail.com](mailto:poluzerov24@gmail.com).
+Please report any problems directly to the GitHub [issue tracker](https://github.com/venikkus/microsporidia_screening/issues).
 
+Also, you can send your feedback to authors:
+- [niksamusik@gmail.com](mailto:niksamusik@gmail.com)
+- [poluzerov24@gmail.com](mailto:poluzerov24@gmail.com)
