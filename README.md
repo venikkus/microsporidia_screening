@@ -149,7 +149,7 @@ snakemake -s snakefile_phylo --cores [NUM_CORES] --config busco_input=[DATA_FOR_
 
 ## Examples
 
-If you want quickly recreate ***part*** of this project:
+If you want quickly recreate ***part*** of this project (run for one genome (Tigriopus californicus) for pipeline test):
 ```bash
 chmod +x run_part.sh
 ./run_part.sh
