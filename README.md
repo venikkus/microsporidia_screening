@@ -36,7 +36,7 @@ Uses the `BUSCO_phylogenomics.py` script and provided collection of microsporidi
 
 ## System and memory requirements
 
-- Linux (tested on Ubuntu 24.04 with kernel 6.8.0-55-generic)
+- Linux (tested on Ubuntu 24.04.1, kernel 6.8 and Ubuntu 22.04.3, kernel 5.15)
 
 - 60+ GB disk space for full analysis and >=32 GB RAM.
 
@@ -50,7 +50,7 @@ git clone git@github.com:venikkus/microsporidia_screening.git
 cd microsporidia_screening
 ```
 
-2. Use the provided `environment.yaml` file to create the conda environment:
+2. Use the provided `environment.yaml` file to create the conda environment. If you don't have conda, use these [installation instuctions](https://www.anaconda.com/docs/getting-started/miniconda/install#linux):
 
 ```bash
 conda env create -f environment.yaml    
@@ -60,6 +60,10 @@ conda activate screening
 Clone `BUSCO_phylogenomics` tool from GitHub.
 ```bash
 git clone git@github.com:jamiemcg/BUSCO_phylogenomics
+```
+or
+```
+git clone https://github.com/jamiemcg/BUSCO_phylogenomics.git
 ```
 
 Then download and unzip the databases (this step is for people who need to use a VPN, since downloading is not available from 💅Russia💅):
@@ -74,10 +78,9 @@ tar -xvzf busco/fungi_odb10.2024-01-08.tar.gz -C busco
 tar -xvzf busco/microsporidia_odb10.2024-01-08.tar.gz -C busco
 ```
 
-Download unpack reference busco results archive from [link](https://mega.nz/file/Hvo3XIZb#AsMuHzxkmFBySby07WmKajqgCF8_kf7sKXjSa-cLtZs):
+Download and unpack reference busco results archive from [link](https://mega.nz/file/Hvo3XIZb#AsMuHzxkmFBySby07WmKajqgCF8_kf7sKXjSa-cLtZs) manually or using [MEGA CMD](https://mega.io/ru/cmd#download):
 
 ```bash
-wget -O data_for_tree.tar.gz "https://mega.nz/file/Hvo3XIZb#AsMuHzxkmFBySby07WmKajqgCF8_kf7sKXjSa-cLtZs"
 tar -xzf data_for_tree.tar.gz
 ```
 
