@@ -14,6 +14,11 @@ This repository contains a **Snakemake**-based pipeline for genome binning and p
 
 ## Pipeline Overview
 
+<div style="display: flex; gap: 10px; align-items: center;">
+    <img src="images/pipeline.png" width="700">
+</div>
+<br>
+
 1. **Assembly downloading**
 
 Downloads a reference genome assembly with a given NCBI identifier (e.g. `GCF_007210705.1`). Uses the NCBI FTP link to obtain the `.fna.gz` file, which is then unpacked into `input_reads/`.
