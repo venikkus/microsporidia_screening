@@ -15,6 +15,7 @@ rule busco_phylogenomics_all:
         percent_single_copy = 80
     shell:
         """
+        rm -r busco_phylo_results
         python BUSCO_phylogenomics/BUSCO_phylogenomics.py \
             -i {input} \
             -o {params.outdir} \
